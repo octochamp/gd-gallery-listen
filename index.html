@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Stream Player</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.0/hls.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- <h1>Grpahic Deisgn audio stream</h1> -->
+        <button id="playButton" class="play-button">▶</button>
+        <p id="status" class="status"> </p>
+
+        <div class="volume-control">
+            <label for="volume" class="volume-label"></label>
+            <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
+        </div>
+    </div>
+
+    <audio id="audioPlayer" style="display:none;"></audio>
+
+    <script>
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playButton = document.getElementById('playButton');
+        const statusText = document.getElementById('status');
+        const volumeControl = document.getElementById('volume');
+        let isPlaying = false;
+
+        const streamUrl = 'https://cast.grpahicdeisgn.com/hls/stream.m3u8';
+
+        // Set initial volume
+        audioPlayer.volume = volumeControl.value;
+
+        // Volume control
+        volumeControl.addEventListener('input', () => {
+            audioPlayer.volume = volumeControl.value;
+        });
+
+        playButton.addEventListener('click', togglePlay);
+
+        function togglePlay() {
+            if (isPlaying) {
+                audioPlayer.pause();
+                playButton.textContent = "▶";
+                statusText.textContent = " ";
+                isPlaying = false;
+            } else {
+                playButton.disabled = true;
+                statusText.textContent = "";
+
+                startPlayback();
+            }
+        }
+
+        function startPlayback() {
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(streamUrl);
+                hls.attachMedia(audioPlayer);
+
+                hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                    playAudio();
+                });
+
+                hls.on(Hls.Events.ERROR, function (event, data) {
+                    if (data.fatal) {
+                        statusText.textContent = "Error loading stream. Please try again later.";
+                        playButton.disabled = false;
+                    }
+                });
+            }
+            else if (audioPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+                // Native HLS support (Safari)
+                audioPlayer.src = streamUrl;
+                audioPlayer.addEventListener('loadedmetadata', function () {
+                    playAudio();
+                });
+
+                audioPlayer.addEventListener('error', function () {
+                    statusText.textContent = "Error loading stream. Please try again later.";
+                    playButton.disabled = false;
+                });
+            }
+            else {
+                statusText.textContent = "Your browser doesn't support HLS streaming.";
+                playButton.disabled = false;
+            }
+        }
+
+        function playAudio() {
+            audioPlayer.play()
+                .then(() => {
+                    playButton.textContent = "⏸️";
+                    statusText.textContent = "";
+                    isPlaying = true;
+                    playButton.disabled = false;
+                })
+                .catch(error => {
+                    statusText.textContent = "Playback error: " + error.message;
+                    playButton.disabled = false;
+                });
+        }
+    </script>
+</body>
+
+</html>
