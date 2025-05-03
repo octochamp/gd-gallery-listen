@@ -12,7 +12,7 @@
 <body>
     <div class="container">
         <!-- <h1>Grpahic Deisgn audio stream</h1> -->
-        <button id="playButton" class="play-button">▶</button>
+        <button id="playButton" class="play-button">▶️</button>
         <p id="status" class="status"> </p>
 
         <div class="volume-control">
@@ -45,7 +45,7 @@
         function togglePlay() {
             if (isPlaying) {
                 audioPlayer.pause();
-                playButton.textContent = "▶";
+                playButton.textContent = "▶️";
                 statusText.textContent = " ";
                 isPlaying = false;
             } else {
